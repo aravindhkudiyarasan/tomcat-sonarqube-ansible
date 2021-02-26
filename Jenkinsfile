@@ -39,7 +39,7 @@ pipeline {
         }
 		stage('Deploy') {
 		    steps{
-			      ansiblePlaybook become: true, colorized: true, credentialsId: 'ansible', disableHostKeyChecking: true, installation: 'Ansible', inventory: '/home/aravindh/ansible-tomcat/inventory', playbook: '/home/aravindh/ansible-tomcat/playbook.yml', sudoUser: null
+			      ansiblePlaybook become: true, colorized: true, credentialsId: 'ansible', disableHostKeyChecking: true, installation: 'Ansible', inventory: '/home/aravindh/ansible-tomcat/inventory', playbook: '/home/aravindh/ansible-tomcat/copybuild.yml', sudoUser: null
 				  }
 		}
     }
