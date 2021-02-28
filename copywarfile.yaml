@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install tomcat
+      yum:
+        name: tomcat
+        state: present
+    - name: Start tomcat
+      service:
+        name: tomcat
+        state: started
+        enabled: yes
+
+    - name: copy jar/war onto tomcat servers
+      copy:
+        src: /opt/playbook/sample.war
+        dest: /usr/share/tomcat/webapps/sample.war
