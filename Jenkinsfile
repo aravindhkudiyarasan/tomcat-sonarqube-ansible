@@ -1,33 +1,39 @@
 pipeline {
     agent any
-    tools {
-        maven 'maven3'
-    }
-    options {
-        buildDiscarder logRotator(daysToKeepStr: '5', numToKeepStr: '7')
-    }
-    //stages{
-      //  stage('Build'){
-        //    steps{
-          //       sh script: 'mvn clean package'
-            //     archiveArtifacts artifacts: 'target/*.war', onlyIfSuccessful: true
-            //}
-        //}
-		stage('sonaqube analysis'){
-		    steps{
-			    withSonarQubeEnv('sonarqube'){
-				sh 'mvn clean package sonar:sonar'
-				}
-			}
-		}
-		stage("Quality Gate"){
-		    timeout(time: 1, unit: 'HOURS') { // Just in case something goes wrong, pipeline will be killed after a timeout
-            def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
-            if (qg.status != 'OK') {
-             error "Pipeline aborted due to quality gate failure: ${qg.status}"
-			}
-		}
-	}
+	 tools{
+	  maven 'maven3'
+	  }
+    stages {
+        
+		stage('SCM') {
+            steps {
+                git url: 'https://github.com/aravindhkudiyarasan/sample-app.git'
+            }
+        }
+        stage('Build && SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    
+                        sh 'mvn clean package sonar:sonar'
+                    
+                }
+            }
+        }
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 30, unit: 'SECONDS') {
+				    script{
+                    def qg = waitForQualityGate()
+                    if (qg.status != 'OK') {
+                              error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                          }
+                }    }
+            }
+        }
+        stage("MAVEN BUILD") {
+            steps{
+                sh 'mvn clean package'
+        }   }
         stage('Upload War To Nexus'){
             steps{
                 script{
@@ -49,8 +55,9 @@ pipeline {
                     protocol: 'http', 
                     repository: nexusRepoName, 
                     version: "${mavenPom.version}"
-                    }
+                }
             }
         }
-	}	
-
+        
+    }   
+}
